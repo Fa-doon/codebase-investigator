@@ -17,7 +17,8 @@ pool = ConnectionPool(
     )
 )
 
-app = FastAPI() #create FastAPI app
+#create FastAPI app
+app = FastAPI() 
 
 # Pydantic models
 class Question(BaseModel):
@@ -30,6 +31,8 @@ class CodeChunk(BaseModel):
     file_path: str
     chunk_number: int
     code: str
+
+
 
 @app.post("/ask")
 def ask(question: Question): 
