@@ -17,27 +17,19 @@ pool = ConnectionPool(
     )
 )
 
-# print(connection)
-
-print(os.getenv("DB_HOST"))
-
-# cursor.execute("""
-#     CREATE TABLE IF NOT EXISTS test (
-#         id SERIAL PRIMARY KEY,
-#         name TEXT    
-#     )
-# """)
-
-# connection.commit()
-
-
 app = FastAPI() #create FastAPI app
 
+# Pydantic models
 class Question(BaseModel):
     question: str
 
 class TestData(BaseModel):
     name: str
+
+class CodeChunk(BaseModel):
+    file_path: str
+    chunk_number: int
+    code: str
 
 @app.post("/ask")
 def ask(question: Question): 
@@ -64,4 +56,19 @@ def get_test():
             rows = cursor.fetchall()
 
     return {"rows": rows}
+
+@app.post("/code-chunks")
+def create_code_chunk(chunk: CodeChunk):
+    with pool.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO code_chunks (file_path, chunk_number, code)
+                VALUES (%s, %s, %s)
+            """, (
+                chunk.file_path,
+                chunk.chunk_number,
+                chunk.code
+            ))
+
+    return {"message": "Code chunk created"}
 
