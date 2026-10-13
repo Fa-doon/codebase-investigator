@@ -32,6 +32,7 @@ def multiply(a, b):
     return a * b"""
 
 lines = content.splitlines()
+print(lines)
 
 chunk_size = 3
 
