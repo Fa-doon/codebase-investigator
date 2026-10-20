@@ -39,7 +39,8 @@ for root, directories, files in os.walk(codebase_directory):
                         """
                         INSERT INTO code_chunks (file_path, chunk_number, code)
                         VALUES (%s, %s, %s)
-                        ON CONFLICT (file_path, chunk_number) DO NOTHING
+                        ON CONFLICT (file_path, chunk_number)
+                        DO UPDATE SET code = EXCLUDED.code
                         """,
                         (file_path, chunk_number, code)
                     )
