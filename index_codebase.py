@@ -17,30 +17,36 @@ pool = ConnectionPool(connection_string)
 codebase_directory = os.path.join(os.getcwd(), "sample_codebase")
 chunk_size = 3
 
-# find files in sample_codebase
 for root, directories, files in os.walk(codebase_directory):
     for file in files:
-        file_path = os.path.join(root, file) # get full path
+        file_path = os.path.join(root, file)
 
-        with open(file_path, "r", encoding="utf-8") as source_file: # read content
+        with open(file_path, "r", encoding="utf-8") as source_file:
             content = source_file.read()
 
-        lines = content.splitlines() # split content into chunks
+        lines = content.splitlines()
 
-        for start in range(0, len(lines), chunk_size):
-            chunk = lines[start:start + chunk_size]
-            code = "\n".join(chunk)
+        with pool.connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    DELETE FROM code_chunks
+                    WHERE file_path = %s
+                    """,
+                    (file_path,)
+                )
 
-            chunk_number = start // chunk_size + 1
+                for start in range(0, len(lines), chunk_size):
+                    chunk = lines[start:start + chunk_size]
+                    code = "\n".join(chunk)
 
-            with pool.connection() as connection:
-                with connection.cursor() as cursor:
-                    cursor.execute(                      #save chunk
+                    chunk_number = start // chunk_size + 1
+
+                    cursor.execute(
                         """
-                        INSERT INTO code_chunks (file_path, chunk_number, code)
+                        INSERT INTO code_chunks
+                            (file_path, chunk_number, code)
                         VALUES (%s, %s, %s)
-                        ON CONFLICT (file_path, chunk_number)
-                        DO UPDATE SET code = EXCLUDED.code
                         """,
                         (file_path, chunk_number, code)
                     )
