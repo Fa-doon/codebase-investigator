@@ -15,6 +15,13 @@ connection_string = (
 pool = ConnectionPool(connection_string)
 
 codebase_directory = os.path.join(os.getcwd(), "sample_codebase")
+existing_files = []
+
+for root, directories, files in os.walk(codebase_directory):
+    for file in files:
+        file_path = os.path.join(root, file)
+        existing_files.append(file_path)
+
 chunk_size = 3
 
 for root, directories, files in os.walk(codebase_directory):
@@ -49,6 +56,44 @@ for root, directories, files in os.walk(codebase_directory):
                         VALUES (%s, %s, %s)
                         """,
                         (file_path, chunk_number, code)
+                    )
+
+# 1. Discover files currently on disk
+existing_files = []
+
+for root, directories, files in os.walk(codebase_directory):
+    for file in files:
+        file_path = os.path.join(root, file)
+        existing_files.append(file_path)
+
+# 2. Retrieve paths already stored in PostgreSQL
+stored_files = []
+
+with pool.connection() as connection:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT DISTINCT file_path
+            FROM code_chunks
+            """
+        )
+
+        rows = cursor.fetchall()
+
+        for row in rows:
+            stored_files.append(row[0])
+
+for stored_file in stored_files:
+    if stored_file.startswith(codebase_directory + os.sep):
+        if stored_file not in existing_files:
+            with pool.connection() as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        DELETE FROM code_chunks
+                        WHERE file_path = %s
+                        """,
+                        (stored_file,)
                     )
 
 pool.close()
