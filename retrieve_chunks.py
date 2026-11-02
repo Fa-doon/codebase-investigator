@@ -14,7 +14,7 @@ connection_sting = (
 
 pool = ConnectionPool(connection_sting)
 
-search_term = "%greet%"
+search_term = "%example.py%"
 
 with pool.connection() as connection:
     with connection.cursor() as cursor:
@@ -22,15 +22,19 @@ with pool.connection() as connection:
             """
             SELECT id, file_path, chunk_number, code
             FROM code_chunks
-            WHERE code LIKE %s
-            ORDER BY file_path, chunk_number
+            WHERE file_path LIKE %s
+            ORDER BY chunk_number
             """,
             (search_term,)
         )
 
         rows = cursor.fetchall()
 
+        full_code = ""
+
         for row in rows:
-            print(row)
+            full_code += row[3] + "\n"
+            
+        print(full_code)
 
 pool.close()
