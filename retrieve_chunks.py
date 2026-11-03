@@ -15,10 +15,12 @@ connection_sting = (
 pool = ConnectionPool(connection_sting)
 
 # search_term = "%example.py%"
+codebase_directory = os.path.join(os.getcwd(), "sample_codebase")
 
 def get_file_code(file_path):
     full_code = ""
-    search_term = f"%{file_path}%"
+    file_path = os.path.join(os.getcwd(), "sample_codebase", file_path)
+    search_term = file_path
 
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -26,7 +28,7 @@ def get_file_code(file_path):
                 """
                 SELECT id, file_path, chunk_number, code
                 FROM code_chunks
-                WHERE file_path LIKE %s
+                WHERE file_path = %s
                 ORDER BY chunk_number
                 """,
                 (search_term,)
