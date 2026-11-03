@@ -26,24 +26,36 @@ def get_file_code(file_path):
         with connection.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT id, file_path, chunk_number, code
-                FROM code_chunks
-                WHERE file_path = %s
-                ORDER BY chunk_number
+                 SELECT chunk_number, code
+                 FROM code_chunks
+                 WHERE file_path = %s
+                 AND chunk_number = %s
                 """,
-                (search_term,)
+                (file_path, 1)
             )
 
             rows = cursor.fetchall()
 
 
         for row in rows:
-            full_code += row[3] + "\n"
+            # full_code += row[3] + "\n"
+            full_code += row[1] + "\n"
                 
         return full_code
 
 code = get_file_code("example.py")
-if (code):
- print(code)
+# if (code):
+#  print(code)
+
+question = "What does the greet function do?"
+
+prompt = f"""
+Question: {question}
+
+Code:
+{code}
+"""
+
+print(prompt)
 
 pool.close()
