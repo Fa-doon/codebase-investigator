@@ -20,7 +20,7 @@ codebase_directory = os.path.join(os.getcwd(), "sample_codebase")
 def get_file_code(file_path):
     full_code = ""
     file_path = os.path.join(os.getcwd(), "sample_codebase", file_path)
-    search_term = file_path
+   
 
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -29,9 +29,9 @@ def get_file_code(file_path):
                  SELECT chunk_number, code
                  FROM code_chunks
                  WHERE file_path = %s
-                 AND chunk_number = %s
+                 AND code ILIKE %s
                 """,
-                (file_path, 1)
+                (file_path, "%greet%")
             )
 
             rows = cursor.fetchall()
@@ -48,6 +48,20 @@ code = get_file_code("example.py")
 #  print(code)
 
 question = "What does the greet function do?"
+
+cleaned_question = question.replace("?", "")
+words = cleaned_question.split()
+stop_words = ["what", "does", "the", "do", "is", "a", "an"]
+
+search_terms = []
+
+for word in words:
+    if word.lower() not in stop_words:
+        search_terms.append(word)
+
+print(search_terms)
+
+print(words)
 
 prompt = f"""
 Question: {question}
