@@ -1,6 +1,7 @@
 from psycopg_pool import ConnectionPool
 from dotenv import load_dotenv
 import os
+import string
 
 load_dotenv()
 
@@ -47,15 +48,17 @@ code = get_file_code("example.py")
 # if (code):
 #  print(code)
 
-question = "What does the greet function do?"
+question = "How does the add() function work?"
 
 cleaned_question = question.replace("?", "")
 words = cleaned_question.split()
-stop_words = ["what", "does", "the", "do", "is", "a", "an"]
+stop_words = ["how", "does", "the", "do", "is", "a", "an"]
 
 search_terms = []
 
 for word in words:
+    word = word.strip(string.punctuation)
+
     if word.lower() not in stop_words:
         search_terms.append(word)
 
